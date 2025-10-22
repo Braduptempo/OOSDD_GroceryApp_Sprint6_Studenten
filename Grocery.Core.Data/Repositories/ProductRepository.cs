@@ -1,4 +1,5 @@
-﻿using Grocery.Core.Interfaces.Repositories;
+﻿using Grocery.Core.Data.Helpers;
+using Grocery.Core.Interfaces.Repositories;
 using Grocery.Core.Models;
 using Microsoft.Data.Sqlite;
 
@@ -143,7 +144,15 @@ namespace Grocery.Core.Data.Repositories
 
         public Product? Delete(Product item)
         {
-            throw new NotImplementedException();
+            string query = $"DELETE FROM product WHERE Id = {item.Id}";
+            
+            OpenConnection();
+            
+            Connection.ExecuteNonQuery(query);
+            
+            CloseConnection();
+            
+            return item;
         }
 
         public Product? Update(Product item)
