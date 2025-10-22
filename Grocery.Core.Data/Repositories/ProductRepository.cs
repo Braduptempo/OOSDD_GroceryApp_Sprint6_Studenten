@@ -120,7 +120,25 @@ namespace Grocery.Core.Data.Repositories
 
         public Product Add(Product item)
         {
-            throw new NotImplementedException();
+            const string insertQuery = @"
+                INSERT INTO product(Name, Stock, ExpirationDate, Price)
+                VALUES(@Name, @Stock, @ExpirationDate, @Price);";
+            
+            OpenConnection();
+
+            using (var command = new SqliteCommand(insertQuery, Connection))
+            {
+                command.Parameters.AddWithValue("@Name", item.Name);
+                command.Parameters.AddWithValue("@Stock", item.Stock);
+                command.Parameters.AddWithValue("@Date", item.ShelfLife);
+                command.Parameters.AddWithValue("@Price", item.Price);
+                
+                item.Id = Convert.ToInt32(command.ExecuteScalar());
+            }
+            
+            CloseConnection();
+
+            return item;
         }
 
         public Product? Delete(Product item)
