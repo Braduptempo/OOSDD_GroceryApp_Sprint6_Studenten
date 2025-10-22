@@ -12,13 +12,23 @@ namespace Grocery.Core.Data.Repositories
             InitializeDatabase();
             SeedDefaultData();
             GetAll();
-            // products = [
-            //     new Product(1, "Melk", 300, new DateOnly(2025, 9, 25), 0.95m),
-            //     new Product(2, "Kaas", 100, new DateOnly(2025, 9, 30), 7.98m),
-            //     new Product(3, "Brood", 400, new DateOnly(2025, 9, 12), 2.19m),
-            //     new Product(4, "Cornflakes", 0, new DateOnly(2025, 12, 31), 1.48m)];
         }
-
+        
+        /// <summary>
+        /// Initializes the <c>product</c> table in the SQLite database if it does not already exist.
+        /// </summary>
+        /// <remarks>
+        /// This method executes a <c>CREATE TABLE IF NOT EXISTS</c> statement to define the database schema
+        /// for the <c>product</c> table.  
+        /// The table contains the following columns:
+        /// <list type="bullet">
+        /// <item><description><c>Id</c> – Primary key, auto-incremented integer.</description></item>
+        /// <item><description><c>Name</c> – Product name (text, required).</description></item>
+        /// <item><description><c>Stock</c> – Quantity available in stock.</description></item>
+        /// <item><description><c>ExpirationDate</c> – Expiration date of the product.</description></item>
+        /// <item><description><c>Price</c> – Product price per unit.</description></item>
+        /// </list>
+        /// </remarks>
         private void InitializeDatabase()
         {
             const string createTableQuery = @"
@@ -34,6 +44,17 @@ namespace Grocery.Core.Data.Repositories
             CreateTable(createTableQuery);
         }
 
+        /// <summary>
+        /// Inserts a predefined set of sample products into the <c>product</c> table.
+        /// </summary>
+        /// <remarks>
+        /// This method creates a list of default product entries and generates an <c>INSERT</c> SQL statement for each.  
+        /// All insert operations are executed within a single transaction using
+        /// <see cref="DatabaseConnection.InsertMultipleWithTransaction(System.Collections.Generic.List{string})"/> 
+        /// to ensure atomicity and consistency.
+        ///
+        /// Existing records are not updated or duplicated if the same data already exists in the table.
+        /// </remarks>
         private void SeedDefaultData()
         {
             var defaultItems = new List<(string name, int stock, string expirationDate, Decimal price)>
@@ -51,6 +72,21 @@ namespace Grocery.Core.Data.Repositories
             
             InsertMultipleWithTransaction(insertQueries);
         }
+        
+        
+        /// <summary>
+        /// Retrieves all product records from the database.
+        /// </summary>
+        /// <returns>
+        /// A list of all <see cref="Product"/> objects currently stored in the <c>product</c> table.
+        /// </returns>
+        /// <remarks>
+        /// This method opens a connection to the database, executes a <c>SELECT *</c> query,
+        /// and reads the results using a <see cref="SqliteDataReader"/>.  
+        /// Each record is converted into a <see cref="Product"/> instance and added to the in-memory list.  
+        /// 
+        /// The database connection is closed automatically after reading all records.
+        /// </remarks>
         public List<Product> GetAll()
         {
             products.Clear();
