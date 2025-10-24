@@ -15,6 +15,9 @@ UC19 Product in database en nieuw product aanmaken --> zelfstandig uitwerken.
 - Zorg ervoor dat als er een nieuw product is aangemaakt, deze meteen zichtbaar is in de Productlijst van de ProductView.  
 - Denk aan de registratie van de View, ViewModel en registreren van de route naar NewProductView.  
 
+Bugs
+- Als er meerdere producten toegevoegd zijn, worden ze niet allemaal vertoond in producten
+- Producten met aantal 0 worden niet getoond in producten.
 
 
 
