@@ -20,5 +20,8 @@
         <Tab Title="Product categoriën" Icon="categories.png">
             <ShellContent Title="Product categoriën" ContentTemplate="{DataTemplate local:CategoriesView}" />
         </Tab>
+        <Tab Title="Product toevoegen" Icon="plus.png">
+            <ShellContent Title="Product toevoegen" ContentTemplate="{DataTemplate local:NewProductView}" />
+        </Tab>
     </TabBar>
 </Shell>

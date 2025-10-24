@@ -11,6 +11,11 @@ namespace Grocery.Core.Models
         [RegularExpression(@"^\d+\.\d{0,2}$")]
         [Range(0, 999.99)]
         public Decimal Price { get; set; } = 0;
+        
+        public Product() : base(0, string.Empty)
+        {
+            
+        }
         public Product(int id, string name, int stock) : this(id, name, stock, default, 0) { }
         public Product(int id, string name, int stock, DateOnly shelfLife) : this(id, name, stock, default, 0) { }
 
