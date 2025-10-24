@@ -7,7 +7,7 @@ namespace Grocery.App.ViewModels;
 
 public partial class NewProductViewModel : BaseViewModel
 {
-    private readonly IProductService _productService;
+    private readonly IProductCreationService _productCreationService;
 
     [ObservableProperty]
     private string _name;
@@ -29,9 +29,9 @@ public partial class NewProductViewModel : BaseViewModel
 
     private readonly Client _client;
 
-    public NewProductViewModel(IProductService productService, GlobalViewModel global)
+    public NewProductViewModel(IProductCreationService productCreationService, GlobalViewModel global)
     {
-        _productService = productService;
+        _productCreationService = productCreationService;
         _client = global.Client;
 
     }
@@ -39,56 +39,35 @@ public partial class NewProductViewModel : BaseViewModel
     [RelayCommand]
     public async Task CreateProduct()
     {
-        var validationErrors = new List<string>();
-        var today = DateOnly.FromDateTime(DateTime.Today);
-        
-        System.Diagnostics.Debug.WriteLine($"ShelfLife (DateOnly): {ShelfLife}");
-        System.Diagnostics.Debug.WriteLine($"ShelfLifeDateTime (DateTime): {ShelfLifeDateTime}");
-
-        if (string.IsNullOrWhiteSpace(Name))
-            validationErrors.Add("Voer een product naam in");
-
-        if (Stock < 0)
-            validationErrors.Add("Aantal kan niet minder dan 0 zijn");
-
-        if (Price <= 0)
-            validationErrors.Add("Prijs moet hoger dan 0 zijn");
-
-        if (ShelfLife <= today)
-            validationErrors.Add("Houdbaarheidsdatum moet een toekomstige datum bevatten");
-        
-        if (validationErrors.Count != 0)
-        {
-            await Shell.Current.DisplayAlert("Ongeldige invoer",
-                string.Join("\n", validationErrors),
-                "OK");
-            return;
-        }
-        
         var product = new Product
         {
-            Name = Name.Trim(),
+            Name = Name?.Trim(),
             Stock = Stock,
             ShelfLife = ShelfLife,
-            Price = Decimal.Round(Price, 2)
+            Price = Price
         };
-        
-        if (_client.Role != Role.Admin)
-        {
-            await Shell.Current.DisplayAlert("Permission Denied", 
-                "Alleen admins kunnen producten toevoegen.", 
-                "OK");
-            return;
-        }
-        
-        _productService.Add(product);
 
-        await Shell.Current.DisplayAlert("Success", 
-            $"Product {product.Name} Is toegevoegd aan producten.", 
-            "OK");
-        Name = string.Empty;
-        Stock = 0;
-        Price = 0;
-        ShelfLife = DateOnly.FromDateTime(DateTime.Today);
+        try
+        {
+            _productCreationService.CreateProduct(_client, product);
+
+            await Shell.Current.DisplayAlert("Success",
+                $"Product '{product.Name}' added successfully.",
+                "OK");
+
+            Name = string.Empty;
+            Stock = 0;
+            Price = 0;
+            ShelfLife = DateOnly.FromDateTime(DateTime.Today);
+        }
+        catch (ArgumentException ex)
+        {
+            await Shell.Current.DisplayAlert("Invalid Input", ex.Message, "OK");
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            await Shell.Current.DisplayAlert("Permission Denied", ex.Message, "OK");
+        }
+       
     }
 }
