@@ -26,7 +26,7 @@ namespace Grocery.Core.Data.Repositories
         /// <item><description><c>Id</c> – Primary key, auto-incremented integer.</description></item>
         /// <item><description><c>Name</c> – Product name (text, required).</description></item>
         /// <item><description><c>Stock</c> – Quantity available in stock.</description></item>
-        /// <item><description><c>ExpirationDate</c> – Expiration date of the product.</description></item>
+        /// <item><description><c>ShelfLife</c> – ShelfLife date of the product.</description></item>
         /// <item><description><c>Price</c> – Product price per unit.</description></item>
         /// </list>
         /// </remarks>
@@ -37,7 +37,7 @@ namespace Grocery.Core.Data.Repositories
                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
                     Name TEXT NOT NULL,
                     Stock Int Not NULL,
-                    ExpirationDate Date NOT NULL,
+                    ShelfLife Date NOT NULL,
                     Price Decimal Not NULL
                 );
             ";
@@ -58,7 +58,7 @@ namespace Grocery.Core.Data.Repositories
         /// </remarks>
         private void SeedDefaultData()
         {
-            var defaultItems = new List<(string name, int stock, string expirationDate, Decimal price)>
+            var defaultItems = new List<(string name, int stock, string shelfLife, Decimal price)>
             {
                 ("Melk", 300, "2025-09-25", 0.95m),
                 ("Kaas", 100, "2025-09-30", 7.98m),
@@ -67,8 +67,8 @@ namespace Grocery.Core.Data.Repositories
             };
 
             var insertQueries = defaultItems.Select(item =>
-                $@"INSERT INTO product(Name, Stock, ExpirationDate, Price)
-                VALUES ('{item.name}', {item.stock}, '{item.expirationDate}', {item.price});"
+                $@"INSERT INTO product(Name, Stock, shelfLife, Price)
+                VALUES ('{item.name}', {item.stock}, '{item.shelfLife}', {item.price});"
             ).ToList();
             
             InsertMultipleWithTransaction(insertQueries);
@@ -105,9 +105,9 @@ namespace Grocery.Core.Data.Repositories
                     int id = reader.GetInt32(0);
                     string name = reader.GetString(1);
                     int stock = reader.GetInt32(2);
-                    DateOnly expirationDate = DateOnly.FromDateTime(reader.GetDateTime(3));
+                    DateOnly shelfLife = DateOnly.FromDateTime(reader.GetDateTime(3));
                     Decimal price = reader.GetDecimal(4);
-                    products.Add(new Product(id, name, stock, expirationDate, price));
+                    products.Add(new Product(id, name, stock, shelfLife, price));
                 }
             }
             CloseConnection();
@@ -122,8 +122,8 @@ namespace Grocery.Core.Data.Repositories
         public Product Add(Product item)
         {
             const string insertQuery = @"
-                INSERT INTO product(Name, Stock, ExpirationDate, Price)
-                VALUES(@Name, @Stock, @ExpirationDate, @Price);";
+                INSERT INTO product(Name, Stock, ShelfLife, Price)
+                VALUES(@Name, @Stock, @ShelfLife, @Price);";
             
             OpenConnection();
 
@@ -131,7 +131,7 @@ namespace Grocery.Core.Data.Repositories
             {
                 command.Parameters.AddWithValue("@Name", item.Name);
                 command.Parameters.AddWithValue("@Stock", item.Stock);
-                command.Parameters.AddWithValue("@Date", item.ShelfLife);
+                command.Parameters.AddWithValue("@ShelfLife", item.ShelfLife);
                 command.Parameters.AddWithValue("@Price", item.Price);
                 
                 item.Id = Convert.ToInt32(command.ExecuteScalar());
